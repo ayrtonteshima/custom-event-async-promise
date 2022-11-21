@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eventos</title>
+</head>
+<body>
+  <div id="app">
+    <button id="btn">Clique aqui</button>
+    <p id="result"></p>
+  </div>
+  <script>
+
+    window.addEventListener('comunica', function(event) {
+      const randomNumber = event.detail?.randomNumber * 2;
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('comunicado', {
+          detail: {
+            message: `Seu número randomico é: ${randomNumber}`
+          }
+        }))
+      }, 1_500);
+    })
+
+    const button = document.querySelector('#btn');
+    button.addEventListener('click', handleClick);
+
+    function getMagicNumber() {
+      return new Promise((resolve) => {
+        window.addEventListener('comunicado', handleComunicado);
+
+        function handleComunicado (event) {
+          window.removeEventListener('comunicado', handleComunicado);
+          resolve(event.detail.message);
+        }
+
+
+        window.dispatchEvent(new CustomEvent('comunica', {
+          bubbles: true,
+          detail: {
+            randomNumber: Math.floor(Math.random() * 1_000) 
+          }
+        }))
+      })
+    }
+
+    async function handleClick(event) {
+      event.target.disabled = true;
+      const result = await getMagicNumber();
+      event.target.disabled = false;
+      document.querySelector('#result').innerHTML = result;
+    }
+  </script>
+</body>
+</html>
